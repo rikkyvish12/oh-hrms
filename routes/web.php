@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\LetterTemplateController;
 use App\Http\Controllers\Admin\LeaveController;
 use App\Http\Controllers\Admin\IpRestrictionController;
 use App\Http\Controllers\Admin\SalarySlipController as AdminSalarySlipController;
+use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
 use App\Http\Controllers\Employee\DashboardController as EmployeeDashboardController;
 use App\Http\Controllers\Employee\SalarySlipController as EmployeeSalarySlipController;
 use App\Http\Controllers\Employee\AttendanceController;
@@ -98,6 +99,12 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     Route::resource('salary-slips', AdminSalarySlipController::class)->except(['index', 'show']);
     Route::get('salary-slips', [AdminSalarySlipController::class, 'index'])->name('salary-slips.index');
     Route::get('salary-slips/{id}', [AdminSalarySlipController::class, 'show'])->name('salary-slips.show');
+    
+    // Employee Attendance Management
+    Route::get('employees/{employeeId}/attendance', [AdminAttendanceController::class, 'index'])
+        ->name('employees.attendance');
+    Route::get('employees/attendance/data', [AdminAttendanceController::class, 'getData'])
+        ->name('employees.attendance.data');
 });
 
 // Employee Routes (Protected)
