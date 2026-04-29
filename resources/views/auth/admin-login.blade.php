@@ -1,143 +1,217 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
-    <div class="w-full max-w-md">
-        <!-- Logo and Header -->
-        <div class="text-center mb-8">
-            <div class="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                </svg>
-            </div>
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">Admin Portal</h1>
-            <p class="text-gray-600">Sign in to access administrative controls</p>
+<style>
+    body { background: #0a0b14 !important; font-family: 'Inter', sans-serif; }
+    .min-h-screen { background: #0a0b14 !important; }
+
+    :root {
+        --primary: #6366f1;
+        --primary-light: #818cf8;
+        --accent2: #a855f7;
+        --accent: #06b6d4;
+        --bg: #0a0b14;
+        --glass: rgba(255,255,255,0.05);
+        --glass-border: rgba(255,255,255,0.1);
+        --text: #f1f5f9;
+        --muted: #94a3b8;
+    }
+
+    .login-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+        background: var(--bg);
+    }
+
+    /* Animated orbs */
+    .orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.3; animation: drift 12s ease-in-out infinite alternate; z-index: 0; pointer-events: none; }
+    .orb1 { width: 400px; height: 400px; background: var(--primary); top: -120px; left: -100px; }
+    .orb2 { width: 320px; height: 320px; background: var(--accent2); bottom: -80px; right: -60px; animation-delay: -5s; }
+    .orb3 { width: 200px; height: 200px; background: var(--accent); top: 60%; left: 60%; animation-delay: -9s; }
+    @keyframes drift { from { transform: translateY(0) scale(1); } to { transform: translateY(28px) scale(1.07); } }
+
+    /* Background radials */
+    .login-page::before {
+        content: '';
+        position: fixed; inset: 0; z-index: 0;
+        background:
+            radial-gradient(ellipse 70% 60% at 15% 10%, rgba(99,102,241,0.22) 0%, transparent 60%),
+            radial-gradient(ellipse 55% 45% at 85% 85%, rgba(168,85,247,0.18) 0%, transparent 60%);
+    }
+
+    .login-container {
+        position: relative; z-index: 1;
+        width: 100%; max-width: 440px;
+        animation: fadeUp .6s ease both;
+    }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+    /* Back link */
+    .back-link {
+        display: inline-flex; align-items: center; gap: .4rem;
+        color: var(--muted); font-size: .85rem; text-decoration: none;
+        margin-bottom: 2rem; transition: color .2s;
+    }
+    .back-link:hover { color: var(--text); }
+
+    /* Header */
+    .login-header { text-align: center; margin-bottom: 2rem; }
+    .login-icon {
+        width: 68px; height: 68px; border-radius: 20px; margin: 0 auto 1.2rem;
+        background: linear-gradient(135deg, var(--primary), var(--accent2));
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.8rem;
+        box-shadow: 0 8px 32px rgba(99,102,241,0.4);
+    }
+    .login-header h1 { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px; margin-bottom: .4rem; }
+    .login-header p { color: var(--muted); font-size: .92rem; }
+
+    /* Card */
+    .login-card {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2.25rem;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+    }
+
+    /* Form */
+    .form-group { margin-bottom: 1.25rem; }
+    .form-label {
+        display: block; font-size: .82rem; font-weight: 600;
+        color: var(--muted); margin-bottom: .5rem;
+        text-transform: uppercase; letter-spacing: .05em;
+    }
+    .input-wrap { position: relative; }
+    .input-icon {
+        position: absolute; top: 50%; left: 1rem; transform: translateY(-50%);
+        color: var(--muted); font-size: 1rem; pointer-events: none;
+    }
+    .form-input {
+        width: 100%; padding: .85rem 1rem .85rem 2.75rem;
+        background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border);
+        border-radius: 10px; color: var(--text); font-size: .95rem;
+        outline: none; transition: border-color .2s, box-shadow .2s;
+        font-family: 'Inter', sans-serif;
+    }
+    .form-input::placeholder { color: rgba(148,163,184,0.5); }
+    .form-input:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+
+    /* Error */
+    .field-error { color: #f87171; font-size: .8rem; margin-top: .4rem; display: flex; align-items: center; gap: .3rem; }
+    .alert-error {
+        background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25);
+        border-radius: 10px; padding: .9rem 1rem; margin-top: 1rem;
+        color: #fca5a5; font-size: .87rem; display: flex; align-items: center; gap: .5rem;
+    }
+
+    /* Submit */
+    .btn-submit {
+        width: 100%; padding: .9rem; border-radius: 10px; border: none; cursor: pointer;
+        background: linear-gradient(135deg, var(--primary), var(--accent2));
+        color: white; font-size: .95rem; font-weight: 700;
+        letter-spacing: .02em; margin-top: .5rem;
+        transition: opacity .2s, transform .2s, box-shadow .2s;
+        box-shadow: 0 4px 20px rgba(99,102,241,0.35);
+        font-family: 'Inter', sans-serif;
+    }
+    .btn-submit:hover { opacity: .88; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(99,102,241,0.45); }
+    .btn-submit:active { transform: translateY(0); }
+
+    /* Footer link */
+    .card-footer {
+        text-align: center; margin-top: 1.5rem;
+        color: var(--muted); font-size: .85rem;
+    }
+    .card-footer a { color: var(--primary-light); font-weight: 600; text-decoration: none; }
+    .card-footer a:hover { color: white; }
+
+    /* Security badge */
+    .security-badge {
+        display: flex; align-items: center; justify-content: center; gap: .4rem;
+        margin-top: 1.75rem; color: var(--muted); font-size: .78rem;
+    }
+    .security-badge span { color: #34d399; font-size: .9rem; }
+</style>
+
+<div class="login-page">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+
+    <div class="login-container">
+        <a href="{{ url('/') }}" class="back-link">← Back to Home</a>
+
+        <div class="login-header">
+            <div class="login-icon">🛡️</div>
+            <h1>Admin Portal</h1>
+            <p>Sign in to access administrative controls</p>
         </div>
 
-        <!-- Login Card -->
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            <div class="p-8">
-                <form method="POST" action="{{ route('admin.login') }}" class="space-y-6">
-                    @csrf
-                    
-                    <!-- Email Field -->
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-                            Email Address
-                        </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
-                                </svg>
-                            </div>
-                            <input 
-                                id="email" 
-                                type="email" 
-                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('email') border-red-300 focus:ring-red-500 focus:border-red-500 @enderror" 
-                                name="email" 
-                                value="{{ old('email') }}" 
-                                required 
-                                autocomplete="email" 
-                                autofocus
-                                placeholder="Enter your email">
-                        </div>
-                        @error('email')
-                            <p class="mt-2 text-sm text-red-600 flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                {{ $message }}
-                            </p>
-                        @enderror
+        <div class="login-card">
+            <form method="POST" action="{{ route('admin.login') }}">
+                @csrf
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">✉️</span>
+                        <input
+                            id="email" type="email" name="email"
+                            value="{{ old('email') }}"
+                            placeholder="Enter your admin email"
+                            required autofocus autocomplete="email"
+                            class="form-input">
                     </div>
-
-                    <!-- Password Field -->
-                    <div>
-                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                            Password
-                        </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                </svg>
-                            </div>
-                            <input 
-                                id="password" 
-                                type="password" 
-                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('password') border-red-300 focus:ring-red-500 focus:border-red-500 @enderror" 
-                                name="password" 
-                                required 
-                                autocomplete="current-password"
-                                placeholder="Enter your password">
-                        </div>
-                        @error('password')
-                            <p class="mt-2 text-sm text-red-600 flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Login Button -->
-                    <div>
-                        <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:-translate-y-0.5">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-                            </svg>
-                            Sign In
-                        </button>
-                    </div>
-
-                    <!-- Error Messages -->
-                    @if(session('error'))
-                        <div class="rounded-lg bg-red-50 border border-red-200 p-4">
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <p class="text-sm text-red-700">{{ session('error') }}</p>
-                            </div>
-                        </div>
-                    @endif
-
-                    @error('ip')
-                        <div class="rounded-lg bg-red-50 border border-red-200 p-4">
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <p class="text-sm text-red-700">{{ $message }}</p>
-                            </div>
-                        </div>
+                    @error('email')
+                        <div class="field-error">⚠ {{ $message }}</div>
                     @enderror
-                </form>
-            </div>
-            
-            <!-- Footer -->
-            <div class="bg-gray-50 px-8 py-6 border-t border-gray-100">
-                <div class="text-center">
-                    <p class="text-sm text-gray-600">
-                        Not an administrator? 
-                        <a href="{{ route('employee.login') }}" class="font-medium text-blue-600 hover:text-blue-500 transition-colors">
-                            Employee Login
-                        </a>
-                    </p>
                 </div>
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">🔒</span>
+                        <input
+                            id="password" type="password" name="password"
+                            placeholder="Enter your password"
+                            required autocomplete="current-password"
+                            class="form-input">
+                    </div>
+                    @error('password')
+                        <div class="field-error">⚠ {{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="btn-submit">Sign In as Administrator</button>
+
+                <!-- Session Errors -->
+                @if(session('error'))
+                    <div class="alert-error">⚠ {{ session('error') }}</div>
+                @endif
+
+                @error('ip')
+                    <div class="alert-error">⚠ {{ $message }}</div>
+                @enderror
+            </form>
+
+            <div class="card-footer">
+                Not an administrator? <a href="{{ route('employee.login') }}">Employee Login</a>
             </div>
         </div>
 
-        <!-- Security Notice -->
-        <div class="mt-6 text-center">
-            <div class="inline-flex items-center px-4 py-2 bg-blue-50 rounded-full">
-                <svg class="w-4 h-4 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                </svg>
-                <span class="text-sm text-blue-700">Secure admin access portal</span>
-            </div>
+        <div class="security-badge">
+            <span>🔐</span> Secured admin access · OHA-HRMS
         </div>
     </div>
 </div>
